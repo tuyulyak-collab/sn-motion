@@ -19,6 +19,24 @@ The MVP ships with one polished template: **YouTube Countdown Intro**.
 - Export an MP4 with a deterministic, frame-based animation.
 - Save and load settings as a small JSON file.
 
+## Navigation
+
+SN Motion is organised around a soft pastel sidebar (drawer on mobile) with nine sections. Dashboard is the default view.
+
+| Section | What it does |
+| --- | --- |
+| **Dashboard** | Overview of your motion project — active template, video size, length, and quick-start CTAs. |
+| **Templates** | Choose a reusable motion video template, customize it, and apply a plain-English description. |
+| **AI Motion Generator** | Advanced — describe a motion idea and convert it into template settings. The full assistant is on the way; the description tool inside Templates already works today. |
+| **Batch Motion** | Coming soon — prepare multiple motion videos from a text or CSV file. |
+| **Preview** | Watch your video before exporting (live preview powered by Remotion Player). |
+| **Export** | Render and download your video as an MP4. |
+| **Assets** | Coming soon — manage images, audio, and backgrounds in one place. |
+| **Settings** | Save / load your settings as JSON, reset to defaults, and (later) manage provider settings. |
+| **Activity Log** | Coming soon — beginner-friendly history of generations and exports. |
+
+Sidebar state (which section you were last on) is remembered across reloads.
+
 ## Install
 
 ```bash
