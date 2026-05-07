@@ -1,14 +1,17 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { Header } from "@/components/Header";
-import { TemplateGallery } from "@/components/TemplateGallery";
-import { CustomizePanel } from "@/components/CustomizePanel";
-import { PreviewPanel } from "@/components/PreviewPanel";
-import { RenderPanel } from "@/components/RenderPanel";
-import { PromptBox } from "@/components/PromptBox";
-import { SaveLoadSettings } from "@/components/SaveLoadSettings";
-import { EmptyState } from "@/components/EmptyState";
+import { AppShell, isSectionId } from "@/components/AppShell";
+import { DashboardSection } from "@/components/sections/DashboardSection";
+import { TemplatesSection } from "@/components/sections/TemplatesSection";
+import { PreviewSection } from "@/components/sections/PreviewSection";
+import { ExportSection } from "@/components/sections/ExportSection";
+import { SettingsSection } from "@/components/sections/SettingsSection";
+import { AISection } from "@/components/sections/AISection";
+import { BatchSection } from "@/components/sections/BatchSection";
+import { AssetsSection } from "@/components/sections/AssetsSection";
+import { ActivityLogSection } from "@/components/sections/ActivityLogSection";
+import { DEFAULT_SECTION, SectionId } from "@/components/sections/sectionDefs";
 import {
   countdownIntroDefaults,
   CountdownIntroProps,
@@ -16,14 +19,12 @@ import {
 import { parseSettingsJson } from "@/lib/settingsStorage";
 
 const STORAGE_KEY = "sn-motion:settings:v1";
-const HAS_STARTED_KEY = "sn-motion:has-started:v1";
+const SECTION_KEY = "sn-motion:section:v1";
 
 export default function HomePage() {
   const [props, setProps] = useState<CountdownIntroProps>(countdownIntroDefaults);
-  const [hasStarted, setHasStarted] = useState(false);
+  const [active, setActive] = useState<SectionId>(DEFAULT_SECTION);
   const [hydrated, setHydrated] = useState(false);
-  const previewRef = useRef<HTMLDivElement>(null);
-  const exportRef = useRef<HTMLDivElement>(null);
   const loadRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -33,8 +34,10 @@ export default function HomePage() {
         const result = parseSettingsJson(raw);
         if (result.ok) setProps(result.props);
       }
-      const started = window.localStorage.getItem(HAS_STARTED_KEY);
-      setHasStarted(started === "1");
+      const savedSection = window.localStorage.getItem(SECTION_KEY);
+      if (isSectionId(savedSection)) {
+        setActive(savedSection);
+      }
     } catch {
       // ignore
     } finally {
@@ -51,33 +54,25 @@ export default function HomePage() {
     }
   }, [props, hydrated]);
 
-  const handleStart = () => {
-    setHasStarted(true);
+  useEffect(() => {
+    if (!hydrated) return;
     try {
-      window.localStorage.setItem(HAS_STARTED_KEY, "1");
+      window.localStorage.setItem(SECTION_KEY, active);
     } catch {
       // ignore
     }
+  }, [active, hydrated]);
+
+  const handleSave = () => {
+    setActive("settings");
     setTimeout(() => {
-      previewRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 100);
+      const evt = new CustomEvent("sn-motion:save");
+      window.dispatchEvent(evt);
+    }, 50);
   };
 
-  const handleLoadFromIntro = () => {
-    setHasStarted(true);
-    try {
-      window.localStorage.setItem(HAS_STARTED_KEY, "1");
-    } catch {
-      // ignore
-    }
-    setTimeout(() => loadRef.current?.click(), 50);
-  };
-
-  const handleHeaderExport = () => {
-    setHasStarted(true);
-    setTimeout(() => {
-      exportRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 60);
+  const handleExport = () => {
+    setActive("export");
   };
 
   const onHiddenFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -92,54 +87,37 @@ export default function HomePage() {
   };
 
   return (
-    <main className="min-h-screen w-full">
-      <div className="max-w-[1380px] mx-auto px-4 sm:px-6 py-6 md:py-10">
-        <Header
-          onSave={() => {
-            const evt = new CustomEvent("sn-motion:save");
-            window.dispatchEvent(evt);
-          }}
-          onExport={handleHeaderExport}
-        />
+    <AppShell
+      active={active}
+      onSelect={setActive}
+      onSave={handleSave}
+      onExport={handleExport}
+    >
+      {active === "dashboard" && (
+        <DashboardSection props={props} onNavigate={setActive} />
+      )}
+      {active === "templates" && (
+        <TemplatesSection props={props} onChange={setProps} />
+      )}
+      {active === "ai-motion-generator" && (
+        <AISection onNavigate={setActive} />
+      )}
+      {active === "batch-motion" && <BatchSection />}
+      {active === "preview" && <PreviewSection props={props} />}
+      {active === "export" && <ExportSection props={props} />}
+      {active === "assets" && <AssetsSection />}
+      {active === "settings" && (
+        <SettingsSection value={props} onChange={setProps} />
+      )}
+      {active === "activity-log" && <ActivityLogSection />}
 
-        {!hasStarted && (
-          <EmptyState onStart={handleStart} onLoad={handleLoadFromIntro} />
-        )}
-
-        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.25fr)] gap-6">
-          <div className="flex flex-col gap-6">
-            <TemplateGallery
-              selectedId="youtube-countdown-intro"
-              onSelect={() => {
-                /* only one template active */
-              }}
-            />
-            <CustomizePanel value={props} onChange={setProps} />
-            <PromptBox current={props} onApply={setProps} />
-          </div>
-          <div className="flex flex-col gap-6">
-            <div ref={previewRef} className="scroll-mt-6">
-              <PreviewPanel props={props} />
-            </div>
-            <div ref={exportRef} className="scroll-mt-6">
-              <RenderPanel props={props} />
-            </div>
-            <SaveLoadSettings value={props} onChange={setProps} />
-          </div>
-        </div>
-
-        <input
-          ref={loadRef}
-          type="file"
-          accept="application/json,.json"
-          className="hidden"
-          onChange={onHiddenFile}
-        />
-
-        <footer className="mt-10 text-center text-xs text-mute">
-          SN Motion · soft pastel motion templates · made with care
-        </footer>
-      </div>
-    </main>
+      <input
+        ref={loadRef}
+        type="file"
+        accept="application/json,.json"
+        className="hidden"
+        onChange={onHiddenFile}
+      />
+    </AppShell>
   );
 }
