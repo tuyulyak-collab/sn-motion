@@ -17,9 +17,15 @@ type Status =
 
 export const RenderPanel: React.FC<Props> = ({ props }) => {
   const [status, setStatus] = useState<Status>({ state: "idle" });
-  const [filename, setFilename] = useState<string>(() => generateExportFilename());
+  // Defer filename generation to the client only. Generating it during SSR
+  // produces a different string on the server and the client (random + date),
+  // which causes a hydration mismatch warning.
+  const [filename, setFilename] = useState<string>("");
 
-  // Keep filename fresh per export trigger but show it stable in idle
+  useEffect(() => {
+    setFilename(generateExportFilename());
+  }, []);
+
   useEffect(() => {
     if (status.state === "idle") {
       // refresh once a minute so the date always reflects today
@@ -123,8 +129,10 @@ export const RenderPanel: React.FC<Props> = ({ props }) => {
         <div className="text-xs text-mute uppercase tracking-wider mb-1">
           Filename
         </div>
-        <div className="text-sm font-mono text-ink break-all">
-          {status.state === "completed" ? status.filename : filename}
+        <div className="text-sm font-mono text-ink break-all min-h-[1.25rem]">
+          {status.state === "completed"
+            ? status.filename
+            : filename || "Generating filename…"}
         </div>
       </div>
 

@@ -76,7 +76,7 @@ export const TemplateGallery: React.FC<Props> = ({ selectedId, onSelect }) => {
           <p className="text-sm text-mute">Pick a starting template.</p>
         </div>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {TEMPLATES.map((t) => {
           const isActive = t.status === "active";
           const isSelected = isActive && selectedId === t.id;
@@ -86,14 +86,14 @@ export const TemplateGallery: React.FC<Props> = ({ selectedId, onSelect }) => {
               type="button"
               disabled={!isActive}
               onClick={() => isActive && onSelect(t.id)}
-              className={`text-left rounded-3xl p-4 transition-all border ${
+              className={`text-left rounded-3xl p-5 transition-all border ${
                 isSelected
                   ? "shadow-glass"
                   : "shadow-[0_8px_22px_rgba(142,113,161,0.10)]"
               } ${
                 isActive
-                  ? "hover:translate-y-[-2px] hover:shadow-glass cursor-pointer"
-                  : "cursor-not-allowed opacity-80"
+                  ? "hover:-translate-y-[2px] hover:shadow-glass cursor-pointer"
+                  : "cursor-not-allowed opacity-70 hover:opacity-80"
               }`}
               style={{
                 background: "rgba(255,255,255,0.78)",
@@ -103,17 +103,21 @@ export const TemplateGallery: React.FC<Props> = ({ selectedId, onSelect }) => {
                 outline: isSelected ? "2px solid rgba(185,167,255,0.45)" : "none",
                 outlineOffset: 2,
               }}
+              aria-pressed={isSelected || undefined}
+              aria-disabled={!isActive || undefined}
             >
               <div
-                className="w-full h-24 rounded-2xl mb-3 flex items-center justify-center text-3xl"
+                className="w-full h-24 rounded-2xl mb-4 flex items-center justify-center text-3xl"
                 style={{ background: t.gradient, color: "white" }}
               >
                 <span aria-hidden>{t.emoji}</span>
               </div>
-              <div className="flex items-center justify-between gap-2 mb-1">
-                <div className="font-semibold text-ink text-sm">{t.name}</div>
+              <div className="flex items-start justify-between gap-2 mb-1">
+                <div className="font-semibold text-ink text-sm leading-tight">
+                  {t.name}
+                </div>
                 <span
-                  className={`sn-pill ${
+                  className={`sn-pill shrink-0 ${
                     isActive ? "sn-pill-active" : "sn-pill-soon"
                   }`}
                 >
