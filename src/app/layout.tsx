@@ -9,9 +9,9 @@ const plusJakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "SN Motion — Soft Pastel Motion Templates",
+  title: "SN Motion — Soft Pastel Motion Generator",
   description:
-    "Create reusable motion intros without complex timelines. Customize a template, preview the animation, and export as MP4.",
+    "Create motion videos without complex timelines. Describe a motion idea, adjust video settings, preview, and export as MP4.",
 };
 
 export default function RootLayout({
