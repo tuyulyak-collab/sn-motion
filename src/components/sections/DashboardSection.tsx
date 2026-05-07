@@ -24,8 +24,8 @@ export const DashboardSection: React.FC<Props> = ({ props, onNavigate }) => {
     <SectionShell sectionId="dashboard">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <SummaryCard
-          label="Active template"
-          value="YouTube Countdown Intro"
+          label="Current motion"
+          value="Untitled motion"
           accent="linear-gradient(135deg, #F6A7C1, #B9A7FF)"
         />
         <SummaryCard
@@ -50,22 +50,22 @@ export const DashboardSection: React.FC<Props> = ({ props, onNavigate }) => {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <ActionCard
-            title="Customize template"
-            description="Edit channel name, colors, length, and theme."
-            cta="Open Templates"
-            onClick={() => onNavigate("templates")}
+            title="Create a single motion"
+            description="Describe a motion idea and adjust video settings."
+            cta="Open Single Motion"
+            onClick={() => onNavigate("single-motion")}
             tone="lavender"
           />
           <ActionCard
             title="Live preview"
-            description="Watch your intro play before you export."
+            description="Watch your motion play before you export."
             cta="Open Preview"
             onClick={() => onNavigate("preview")}
             tone="mint"
           />
           <ActionCard
             title="Export video"
-            description="Render your intro as an MP4 file."
+            description="Render your motion as an MP4 file."
             cta="Open Export"
             onClick={() => onNavigate("export")}
             tone="pink"
@@ -75,26 +75,25 @@ export const DashboardSection: React.FC<Props> = ({ props, onNavigate }) => {
 
       <section className="glass-card p-6 md:p-8">
         <div className="flex flex-col gap-1 mb-4">
-          <h2 className="text-lg font-bold text-ink">What&apos;s new</h2>
+          <h2 className="text-lg font-bold text-ink">What&apos;s next</h2>
           <p className="text-sm text-mute">
-            SN Motion is in early access. Two advanced areas are visible but
-            still being shaped.
+            SN Motion is in early access. Batch generation is on the way.
           </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Highlight
-            title="AI Motion Generator"
-            description="Describe a motion idea in plain English and let SN Motion fill in supported settings for you."
-            badge="Advanced"
-            badgeClass="sn-pill-rendering"
-            onClick={() => onNavigate("ai-motion-generator")}
-          />
-          <Highlight
             title="Batch Motion"
-            description="Prepare multiple intros from a simple text file in one go."
+            description="Prepare multiple motion videos from a simple text file in one go."
             badge="Coming soon"
             badgeClass="sn-pill-soon"
             onClick={() => onNavigate("batch-motion")}
+          />
+          <Highlight
+            title="Assets"
+            description="Manage images, audio, and backgrounds in one place across motions."
+            badge="Coming soon"
+            badgeClass="sn-pill-soon"
+            onClick={() => onNavigate("assets")}
           />
         </div>
       </section>

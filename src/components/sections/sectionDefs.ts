@@ -2,8 +2,7 @@ export type SectionStatus = "active" | "advanced" | "coming-soon";
 
 export type SectionId =
   | "dashboard"
-  | "templates"
-  | "ai-motion-generator"
+  | "single-motion"
   | "batch-motion"
   | "preview"
   | "export"
@@ -28,19 +27,12 @@ export const SECTIONS: SectionDef[] = [
     status: "active",
   },
   {
-    id: "templates",
-    label: "Templates",
-    helper: "Choose a reusable motion video template.",
-    icon: "grid",
-    status: "active",
-  },
-  {
-    id: "ai-motion-generator",
-    label: "AI Motion Generator",
+    id: "single-motion",
+    label: "Single Motion",
     helper:
-      "Describe a motion idea and convert it into template settings.",
+      "Describe a motion idea and adjust video settings. One motion at a time.",
     icon: "sparkles",
-    status: "advanced",
+    status: "active",
   },
   {
     id: "batch-motion",

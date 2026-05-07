@@ -3,11 +3,10 @@
 import React, { useEffect, useRef, useState } from "react";
 import { AppShell, isSectionId } from "@/components/AppShell";
 import { DashboardSection } from "@/components/sections/DashboardSection";
-import { TemplatesSection } from "@/components/sections/TemplatesSection";
+import { SingleMotionSection } from "@/components/sections/SingleMotionSection";
 import { PreviewSection } from "@/components/sections/PreviewSection";
 import { ExportSection } from "@/components/sections/ExportSection";
 import { SettingsSection } from "@/components/sections/SettingsSection";
-import { AISection } from "@/components/sections/AISection";
 import { BatchSection } from "@/components/sections/BatchSection";
 import { AssetsSection } from "@/components/sections/AssetsSection";
 import { ActivityLogSection } from "@/components/sections/ActivityLogSection";
@@ -96,11 +95,8 @@ export default function HomePage() {
       {active === "dashboard" && (
         <DashboardSection props={props} onNavigate={setActive} />
       )}
-      {active === "templates" && (
-        <TemplatesSection props={props} onChange={setProps} />
-      )}
-      {active === "ai-motion-generator" && (
-        <AISection onNavigate={setActive} />
+      {active === "single-motion" && (
+        <SingleMotionSection props={props} onChange={setProps} />
       )}
       {active === "batch-motion" && <BatchSection />}
       {active === "preview" && <PreviewSection props={props} />}
