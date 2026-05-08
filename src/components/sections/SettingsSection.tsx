@@ -1,7 +1,9 @@
 "use client";
 
 import React from "react";
+import { PresetsPanel } from "@/components/PresetsPanel";
 import { SaveLoadSettings } from "@/components/SaveLoadSettings";
+import { MotionSettings } from "@/lib/motionSettings";
 import { CountdownIntroProps } from "@/remotion/schemas/countdownSchema";
 import { SectionShell } from "./SectionShell";
 import { ComingSoonNote } from "./ComingSoonNote";
@@ -9,22 +11,22 @@ import { ComingSoonNote } from "./ComingSoonNote";
 type Props = {
   value: CountdownIntroProps;
   onChange: (next: CountdownIntroProps) => void;
+  motionSettings: MotionSettings;
+  onMotionSettingsChange: (next: MotionSettings) => void;
 };
 
-export const SettingsSection: React.FC<Props> = ({ value, onChange }) => {
+export const SettingsSection: React.FC<Props> = ({
+  value,
+  onChange,
+  motionSettings,
+  onMotionSettingsChange,
+}) => {
   return (
     <SectionShell sectionId="settings">
       <SaveLoadSettings value={value} onChange={onChange} />
-      <ComingSoonNote
-        variant="advanced"
-        title="Presets"
-        description="Save your favourite motion configs as named presets and reuse them across motions. Lives inside Settings — no extra sidebar item."
-        bullets={[
-          "Name and save the current motion settings",
-          "Pick a preset as your default for new motions",
-          "Apply a preset to a motion in one click",
-          "Export and import presets as JSON",
-        ]}
+      <PresetsPanel
+        motionSettings={motionSettings}
+        onApply={onMotionSettingsChange}
       />
       <ComingSoonNote
         variant="advanced"

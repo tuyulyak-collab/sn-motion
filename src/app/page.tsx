@@ -97,7 +97,12 @@ export default function HomePage() {
       {active === "export" && <ExportSection settings={motionSettings} />}
       {active === "assets" && <AssetsSection />}
       {active === "settings" && (
-        <SettingsSection value={props} onChange={setProps} />
+        <SettingsSection
+          value={props}
+          onChange={setProps}
+          motionSettings={motionSettings}
+          onMotionSettingsChange={setMotionSettings}
+        />
       )}
       {active === "activity-log" && <ActivityLogSection />}
 
