@@ -8,6 +8,17 @@ import {
   FPS,
   aspectRatioToDimensions,
 } from "./schemas/countdownSchema";
+import { DynamicMotionComposition } from "./dynamic/DynamicMotionComposition";
+import {
+  dynamicMotionDefaults,
+  dynamicMotionPropsSchema,
+} from "./dynamic/dynamicMotionSchema";
+import {
+  DYNAMIC_MOTION_COMPOSITION_ID,
+  dynamicMotionDimensions,
+  dynamicMotionDurationInFrames,
+  safeFrameRate,
+} from "./dynamic/dynamicMotionConfig";
 
 export const RemotionRoot: React.FC = () => {
   const dur = totalDurationInFrames(countdownIntroDefaults.countdownSeconds);
@@ -16,8 +27,42 @@ export const RemotionRoot: React.FC = () => {
   const dim9x16 = aspectRatioToDimensions("9:16");
   const dim1x1 = aspectRatioToDimensions("1:1");
 
+  const dynamicDefaultDim = dynamicMotionDimensions(
+    dynamicMotionDefaults.aspectRatio,
+    dynamicMotionDefaults.resolution,
+  );
+  const dynamicDefaultFps = safeFrameRate(dynamicMotionDefaults.frameRate);
+  const dynamicDefaultDuration = dynamicMotionDurationInFrames(
+    dynamicMotionDefaults.durationSeconds,
+    dynamicDefaultFps,
+  );
+
   return (
     <>
+      <Composition
+        id={DYNAMIC_MOTION_COMPOSITION_ID}
+        component={DynamicMotionComposition}
+        durationInFrames={dynamicDefaultDuration}
+        fps={dynamicDefaultFps}
+        width={dynamicDefaultDim.width}
+        height={dynamicDefaultDim.height}
+        defaultProps={dynamicMotionDefaults}
+        schema={dynamicMotionPropsSchema}
+        calculateMetadata={({ props }) => {
+          const fps = safeFrameRate(props.frameRate);
+          const dim = dynamicMotionDimensions(props.aspectRatio, props.resolution);
+          return {
+            durationInFrames: dynamicMotionDurationInFrames(
+              props.durationSeconds,
+              fps,
+            ),
+            fps,
+            width: dim.width,
+            height: dim.height,
+            props,
+          };
+        }}
+      />
       <Composition
         id="youtube-countdown-intro-16x9"
         component={YouTubeCountdownIntro}
