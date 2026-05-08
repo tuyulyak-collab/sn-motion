@@ -94,7 +94,7 @@ export default function HomePage() {
       )}
       {active === "batch-motion" && <BatchSection />}
       {active === "preview" && <PreviewSection props={props} />}
-      {active === "export" && <ExportSection props={props} />}
+      {active === "export" && <ExportSection settings={motionSettings} />}
       {active === "assets" && <AssetsSection />}
       {active === "settings" && (
         <SettingsSection value={props} onChange={setProps} />
