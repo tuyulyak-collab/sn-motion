@@ -9,7 +9,7 @@ import {
   type MotionType,
   type Resolution,
   type StyleDirection,
-} from "@/lib/motionSettings";
+} from "../../lib/motionSettings";
 
 export const motionTypeSchema = z.enum([
   "countdown",

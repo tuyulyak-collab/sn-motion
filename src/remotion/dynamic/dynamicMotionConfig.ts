@@ -5,7 +5,7 @@ import {
   type MotionAspectRatio,
   type MotionSettings,
   type Resolution,
-} from "@/lib/motionSettings";
+} from "../../lib/motionSettings";
 
 import {
   dynamicMotionDefaults,

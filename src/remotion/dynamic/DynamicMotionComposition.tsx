@@ -15,7 +15,7 @@ import {
   overlayAlpha,
   safeHex,
   motionTypeLabel,
-} from "@/lib/motionSettings";
+} from "../../lib/motionSettings";
 
 import { motionIntensityMultiplier } from "./dynamicMotionConfig";
 import {
