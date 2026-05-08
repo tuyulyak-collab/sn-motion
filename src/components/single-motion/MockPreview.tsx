@@ -177,7 +177,7 @@ export const MockPreview = forwardRef<HTMLDivElement, Props>(function MockPrevie
       <header className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-lg font-bold text-ink">Mock preview</h2>
-          <p className="text-xs text-mute">
+          <p className="text-xs text-soft">
             Static visual sketch from your settings. Real animation lands in a
             future PR.
           </p>

@@ -32,7 +32,7 @@ export const StepCard = forwardRef<HTMLElement, Props>(function StepCard(
             {title}
           </h2>
           {helper ? (
-            <p className="text-xs md:text-sm text-mute mt-1">{helper}</p>
+            <p className="text-xs md:text-sm text-soft mt-1">{helper}</p>
           ) : null}
         </div>
       </div>

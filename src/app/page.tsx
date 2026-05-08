@@ -69,18 +69,6 @@ export default function HomePage() {
     }
   }, [active, hydrated]);
 
-  const handleSave = () => {
-    setActive("settings");
-    setTimeout(() => {
-      const evt = new CustomEvent("sn-motion:save");
-      window.dispatchEvent(evt);
-    }, 50);
-  };
-
-  const handleExport = () => {
-    setActive("export");
-  };
-
   const onHiddenFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     e.target.value = "";
@@ -93,12 +81,7 @@ export default function HomePage() {
   };
 
   return (
-    <AppShell
-      active={active}
-      onSelect={setActive}
-      onSave={handleSave}
-      onExport={handleExport}
-    >
+    <AppShell active={active} onSelect={setActive}>
       {active === "dashboard" && (
         <DashboardSection props={props} onNavigate={setActive} />
       )}

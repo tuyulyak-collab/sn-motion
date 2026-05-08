@@ -77,7 +77,7 @@ export const VideoSettingsStep: React.FC<Props> = ({ value, onChange }) => {
 
       <div>
         <label className="sn-label">Stage timing (seconds)</label>
-        <p className="text-xs text-mute mb-3">
+        <p className="text-xs text-soft mb-3">
           Optional planning hints. The mock preview keeps these visible so you
           can see how the motion flows before real rendering lands.
         </p>

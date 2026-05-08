@@ -25,7 +25,7 @@ export const SectionShell: React.FC<Props> = ({
             </h1>
             <StatusBadge status={section.status} />
           </div>
-          <p className="text-mute text-sm md:text-base mt-1 md:max-w-2xl">
+          <p className="text-soft text-sm md:text-base mt-1 md:max-w-2xl">
             {section.helper}
           </p>
         </div>

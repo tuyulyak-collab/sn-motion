@@ -72,7 +72,7 @@ export function SegmentedField<T extends string | number>({
                 ) : null}
               </div>
               {opt.helper ? (
-                <div className="text-[11px] text-mute font-normal mt-0.5">
+                <div className="text-[11px] text-soft font-normal mt-0.5">
                   {opt.helper}
                 </div>
               ) : null}
@@ -81,7 +81,7 @@ export function SegmentedField<T extends string | number>({
         })}
       </div>
       {helper ? (
-        <p className="text-xs text-mute mt-2">{helper}</p>
+        <p className="text-xs text-soft mt-2">{helper}</p>
       ) : null}
     </div>
   );

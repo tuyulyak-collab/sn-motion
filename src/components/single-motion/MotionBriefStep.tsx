@@ -29,7 +29,7 @@ export const MotionBriefStep: React.FC<Props> = ({ value, onChange }) => {
           onChange={(e) => onChange("motionConcept", e.target.value)}
           placeholder="Describe the motion you have in mind. Example: a soft pastel countdown that introduces my cooking video, friendly and slow."
         />
-        <p className="text-xs text-mute mt-2">
+        <p className="text-xs text-soft mt-2">
           Free-form notes for now. SN Motion does not call any AI in this step;
           your description is saved with the motion and will guide future
           assistive features.
@@ -38,7 +38,7 @@ export const MotionBriefStep: React.FC<Props> = ({ value, onChange }) => {
 
       <div>
         <label className="sn-label">Motion type</label>
-        <p className="text-xs text-mute mb-3">
+        <p className="text-xs text-soft mb-3">
           Pick an animation backbone — not a fixed template. You can still edit
           every scene, color, and timing field below.
         </p>
@@ -87,7 +87,7 @@ const MotionTypeButton: React.FC<{
           {option.label}
         </span>
       </div>
-      <p className="text-[11px] text-mute leading-snug">{option.helper}</p>
+      <p className="text-[11px] text-soft leading-snug">{option.helper}</p>
     </button>
   );
 };
