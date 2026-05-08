@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Sidebar } from "@/components/Sidebar";
 import { SectionIcon } from "@/components/sections/SectionIcon";
 import {
@@ -16,6 +16,8 @@ type Props = {
   children: React.ReactNode;
 };
 
+const SIDEBAR_COLLAPSED_KEY = "sn-motion:sidebar-collapsed:v1";
+
 const isSectionId = (value: string | null): value is SectionId =>
   !!value && SECTIONS.some((s) => s.id === value);
 
@@ -25,7 +27,36 @@ export const AppShell: React.FC<Props> = ({
   children,
 }) => {
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
+  const [collapsedHydrated, setCollapsedHydrated] = useState(false);
   const section = findSection(active);
+
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem(SIDEBAR_COLLAPSED_KEY);
+      if (raw === "true") setCollapsed(true);
+    } catch {
+      // ignore
+    } finally {
+      setCollapsedHydrated(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!collapsedHydrated) return;
+    try {
+      window.localStorage.setItem(
+        SIDEBAR_COLLAPSED_KEY,
+        collapsed ? "true" : "false",
+      );
+    } catch {
+      // ignore
+    }
+  }, [collapsed, collapsedHydrated]);
+
+  const onToggleCollapsed = useCallback(() => {
+    setCollapsed((c) => !c);
+  }, []);
 
   useEffect(() => {
     if (drawerOpen) {
@@ -36,12 +67,26 @@ export const AppShell: React.FC<Props> = ({
     }
   }, [drawerOpen]);
 
+  // Tailwind needs full class strings present statically so JIT picks them up.
+  const gridColsClass = collapsed
+    ? "lg:grid-cols-[80px_minmax(0,1fr)]"
+    : "lg:grid-cols-[280px_minmax(0,1fr)]";
+
   return (
     <div className="min-h-screen w-full">
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 py-4 md:py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-[280px_minmax(0,1fr)] gap-6">
-          <div className="hidden lg:block">
-            <Sidebar active={active} onSelect={onSelect} variant="rail" />
+        <div
+          className={`grid grid-cols-1 ${gridColsClass} gap-6 transition-[grid-template-columns] duration-200 ease-out`}
+          data-sidebar-collapsed={collapsed ? "true" : "false"}
+        >
+          <div className="hidden lg:block" data-testid="sidebar-rail-slot">
+            <Sidebar
+              active={active}
+              onSelect={onSelect}
+              variant="rail"
+              collapsed={collapsed}
+              onToggleCollapsed={onToggleCollapsed}
+            />
           </div>
 
           <div className="flex flex-col gap-4 min-w-0">
