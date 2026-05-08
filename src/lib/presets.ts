@@ -249,7 +249,7 @@ const trimName = (raw: string): string => {
 };
 
 export const coercePreset = (raw: unknown): Preset | null => {
-  if (!raw || typeof raw !== "object") return null;
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
   const r = raw as Record<string, unknown>;
   const settings = coerceToMotionSettings(r.settings);
   const name =
