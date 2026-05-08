@@ -21,7 +21,7 @@ SN Motion is **motion-first**, not template-first. The user always controls the 
   - Background blur (Low / Medium / High), glow strength (Off / Soft / Medium / Strong), overlay opacity (0% / 25% / 50% / 75%)
   - **Reset colors only** restores just the advanced color block without touching the rest of the settings.
 - See a live preview that updates while you type.
-- Export an MP4 with a deterministic, frame-based animation.
+- Open the **dynamic Remotion composition** (`dynamic-motion-preview-{16x9, 9x16, 1x1}`) in Remotion Studio to scrub through a real frame-based render of the current settings — covering all 8 motion types (Countdown, Reveal, Slide, Fade, Loop, Subscribe, Lower Third, Abstract Motion). _MP4 export and the render API are not implemented yet for the dynamic composition._
 - Save and load settings as a small JSON file.
 
 ## Navigation
@@ -97,9 +97,12 @@ src/
   remotion/
     Root.tsx              # composition registry
     index.ts              # Remotion entry point
-    schemas/              # Zod schemas + defaults
+    schemas/              # Zod schemas + defaults (legacy countdown)
     templates/
       YouTubeCountdownIntro.tsx
+    dynamic/              # PR #7 — first real Remotion composition driven by MotionSettings
+      DynamicMotionComposition.tsx
+      dynamicMotionSchema.ts
 remotion.config.ts        # Remotion CLI defaults
 ```
 

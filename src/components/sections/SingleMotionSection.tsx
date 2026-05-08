@@ -194,6 +194,13 @@ export const SingleMotionSection: React.FC<Props> = ({
         settings={settings}
         version={previewVersion}
       />
+
+      <p className="mx-auto max-w-3xl rounded-2xl border border-white/40 bg-white/35 px-5 py-3 text-center text-sm text-[color:var(--sn-text-soft)] backdrop-blur-md">
+        The real composition lives in Remotion Studio (
+        <code className="rounded bg-white/40 px-1.5 py-0.5 text-xs">npm run remotion:studio</code>
+        , compositions <code className="rounded bg-white/40 px-1.5 py-0.5 text-xs">dynamic-motion-preview-16x9 / 9x16 / 1x1</code>
+        ). MP4 export and the render API are not implemented yet.
+      </p>
     </SectionShell>
   );
 };
