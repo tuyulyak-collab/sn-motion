@@ -3,6 +3,7 @@
 import React, { useCallback, useRef, useState } from "react";
 import { MockPreview } from "@/components/single-motion/MockPreview";
 import { MotionBriefStep } from "@/components/single-motion/MotionBriefStep";
+import { RemotionPlayerPreview } from "@/components/single-motion/RemotionPlayerPreview";
 import { SceneStyleStep } from "@/components/single-motion/SceneStyleStep";
 import { StepCard } from "@/components/single-motion/StepCard";
 import { VideoSettingsStep } from "@/components/single-motion/VideoSettingsStep";
@@ -194,6 +195,8 @@ export const SingleMotionSection: React.FC<Props> = ({
         settings={settings}
         version={previewVersion}
       />
+
+      <RemotionPlayerPreview settings={settings} />
     </SectionShell>
   );
 };
