@@ -1,18 +1,18 @@
 "use client";
 
 import React from "react";
-import { RenderPanel } from "@/components/RenderPanel";
-import { CountdownIntroProps } from "@/remotion/schemas/countdownSchema";
+import { ExportPanel } from "@/components/ExportPanel";
+import { MotionSettings } from "@/lib/motionSettings";
 import { SectionShell } from "./SectionShell";
 
 type Props = {
-  props: CountdownIntroProps;
+  settings: MotionSettings;
 };
 
-export const ExportSection: React.FC<Props> = ({ props }) => {
+export const ExportSection: React.FC<Props> = ({ settings }) => {
   return (
     <SectionShell sectionId="export">
-      <RenderPanel props={props} />
+      <ExportPanel settings={settings} />
     </SectionShell>
   );
 };
