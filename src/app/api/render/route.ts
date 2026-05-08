@@ -156,7 +156,10 @@ export async function POST(req: NextRequest) {
         send({ type: "progress", progress: 0.99, stage: "rendering" });
         send({
           type: "done",
-          downloadUrl: `/renders/${encodeURIComponent(outFilename)}`,
+          // Served by `src/app/api/render/file/[filename]/route.ts` so the
+          // download works in `next start` for MP4s produced at runtime
+          // (Next.js indexes `public/` at server startup only).
+          downloadUrl: `/api/render/file/${encodeURIComponent(outFilename)}`,
           filename: outFilename,
           width: dim.width,
           height: dim.height,
