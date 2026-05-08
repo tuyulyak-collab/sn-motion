@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import path from "path";
 import { promises as fs } from "fs";
 import os from "os";
+import { z } from "zod";
 
 import {
   dynamicMotionPropsSchema,
@@ -18,6 +19,42 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const PUBLIC_RENDERS_DIR = path.join(process.cwd(), "public", "renders");
+
+// Render error categories surfaced to the UI. Stable codes so the UI can map
+// them to friendly copy without parsing free-form messages.
+export type RenderErrorCode =
+  | "invalid_props"
+  | "bundle_failed"
+  | "composition_missing"
+  | "render_failed"
+  | "write_failed";
+
+const errorJson = (
+  status: number,
+  code: RenderErrorCode,
+  message: string,
+): Response =>
+  new Response(JSON.stringify({ error: message, code }), {
+    status,
+    headers: { "content-type": "application/json" },
+  });
+
+// Strip stack traces and overly long error objects down to a single short
+// line so the API never echoes raw `Error: …\n    at …` blocks back to the
+// client. The UI maps codes to friendly copy; this is just a fallback.
+const summarizeError = (err: unknown, fallback: string): string => {
+  const raw = err instanceof Error ? err.message : String(err ?? "");
+  const firstLine = raw.split("\n")[0]?.trim() ?? "";
+  return (firstLine || fallback).slice(0, 240);
+};
+
+const formatZodIssues = (err: z.ZodError): string => {
+  const issues = err.issues.slice(0, 3).map((i) => {
+    const at = i.path.length ? i.path.join(".") : "request";
+    return `${at}: ${i.message}`;
+  });
+  return issues.join("; ");
+};
 
 const sanitizeFilename = (name: string): string => {
   const base = (name ?? "")
@@ -59,30 +96,46 @@ export async function POST(req: NextRequest) {
   let parsedProps: DynamicMotionProps;
   let requestedFilename: string;
   try {
-    const body = await req.json();
-    parsedProps = dynamicMotionPropsSchema.parse(body?.props ?? {});
+    let body: unknown;
+    try {
+      body = await req.json();
+    } catch {
+      return errorJson(
+        400,
+        "invalid_props",
+        "Could not parse the request body as JSON.",
+      );
+    }
+    const bodyObj = (body ?? {}) as { props?: unknown; filename?: unknown };
+    parsedProps = dynamicMotionPropsSchema.parse(bodyObj.props ?? {});
     requestedFilename = sanitizeFilename(
-      typeof body?.filename === "string" && body.filename.length > 0
-        ? body.filename
+      typeof bodyObj.filename === "string" && bodyObj.filename.length > 0
+        ? bodyObj.filename
         : "sn_motion_export.mp4",
     );
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Bad request.";
-    return new Response(JSON.stringify({ error: message }), {
-      status: 400,
-      headers: { "content-type": "application/json" },
-    });
+    if (err instanceof z.ZodError) {
+      return errorJson(
+        400,
+        "invalid_props",
+        `Invalid render settings — ${formatZodIssues(err)}.`,
+      );
+    }
+    return errorJson(
+      400,
+      "invalid_props",
+      summarizeError(err, "Invalid render request."),
+    );
   }
 
   try {
     await fs.mkdir(PUBLIC_RENDERS_DIR, { recursive: true });
   } catch (err) {
-    const message =
-      err instanceof Error ? err.message : "Output folder error.";
-    return new Response(JSON.stringify({ error: message }), {
-      status: 500,
-      headers: { "content-type": "application/json" },
-    });
+    return errorJson(
+      500,
+      "write_failed",
+      summarizeError(err, "Could not create the renders folder."),
+    );
   }
 
   const { filename: outFilename, outPath } = await ensureUniqueOutputPath(
@@ -109,6 +162,11 @@ export async function POST(req: NextRequest) {
         controller.enqueue(encoder.encode(JSON.stringify(event) + "\n"));
       };
 
+      // Stage tracks where we are in the pipeline so the catch block can
+      // attach a stable code (`bundle_failed` | `composition_missing` |
+      // `render_failed`) without inspecting the underlying error message.
+      let stage: "bundle" | "composition" | "render" = "bundle";
+
       try {
         const { bundle } = await import("@remotion/bundler");
         const {
@@ -126,6 +184,7 @@ export async function POST(req: NextRequest) {
 
         send({ type: "progress", progress: 0.15, stage: "preparing" });
 
+        stage = "composition";
         const composition = await selectComposition({
           serveUrl: bundleLocation,
           id: DYNAMIC_MOTION_COMPOSITION_ID,
@@ -134,6 +193,7 @@ export async function POST(req: NextRequest) {
 
         send({ type: "progress", progress: 0.25, stage: "rendering" });
 
+        stage = "render";
         await renderMedia({
           serveUrl: bundleLocation,
           composition: {
@@ -167,9 +227,23 @@ export async function POST(req: NextRequest) {
           durationInFrames,
         });
       } catch (err) {
-        const message =
-          err instanceof Error ? err.message : "Render failed.";
-        send({ type: "error", error: message });
+        const code: RenderErrorCode =
+          stage === "bundle"
+            ? "bundle_failed"
+            : stage === "composition"
+              ? "composition_missing"
+              : "render_failed";
+        const fallback =
+          code === "bundle_failed"
+            ? "Could not bundle the Remotion composition."
+            : code === "composition_missing"
+              ? "Could not find the dynamic-motion-preview composition."
+              : "Render failed before the MP4 finished encoding.";
+        send({
+          type: "error",
+          code,
+          error: summarizeError(err, fallback),
+        });
         // Best-effort cleanup of any partial output file so the user never
         // ends up with a half-written MP4 in public/renders/.
         try {

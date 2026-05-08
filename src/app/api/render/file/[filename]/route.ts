@@ -7,8 +7,17 @@ export const dynamic = "force-dynamic";
 
 const PUBLIC_RENDERS_DIR = path.join(process.cwd(), "public", "renders");
 
-const jsonError = (status: number, message: string) =>
-  new Response(JSON.stringify({ error: message }), {
+// Stable error codes so callers can distinguish a path/validation reject
+// (`invalid_filename`, `unsupported_type`) from a genuine missing file
+// (`not_found`).
+type DownloadErrorCode = "invalid_filename" | "unsupported_type" | "not_found";
+
+const jsonError = (
+  status: number,
+  code: DownloadErrorCode,
+  message: string,
+) =>
+  new Response(JSON.stringify({ error: message, code }), {
     status,
     headers: { "content-type": "application/json" },
   });
@@ -27,7 +36,7 @@ export async function GET(
   try {
     decoded = decodeURIComponent(rawFilename);
   } catch {
-    return jsonError(400, "Invalid filename.");
+    return jsonError(400, "invalid_filename", "Invalid filename.");
   }
 
   if (
@@ -39,24 +48,28 @@ export async function GET(
     decoded === ".." ||
     decoded.startsWith(".")
   ) {
-    return jsonError(400, "Invalid filename.");
+    return jsonError(400, "invalid_filename", "Invalid filename.");
   }
 
   if (!decoded.toLowerCase().endsWith(".mp4")) {
-    return jsonError(400, "Unsupported file type.");
+    return jsonError(400, "unsupported_type", "Unsupported file type.");
   }
 
+  // Defence in depth: re-resolve the absolute path and confirm it stays
+  // inside the renders directory. This catches anything the explicit
+  // separator/null/dot checks above might have missed (e.g. exotic
+  // unicode), and prevents path traversal.
   const baseDir = path.resolve(PUBLIC_RENDERS_DIR);
   const filePath = path.resolve(path.join(baseDir, decoded));
   if (filePath !== baseDir && !filePath.startsWith(baseDir + path.sep)) {
-    return jsonError(400, "Invalid filename.");
+    return jsonError(400, "invalid_filename", "Invalid filename.");
   }
 
   let data: Buffer;
   try {
     data = await fs.readFile(filePath);
   } catch {
-    return jsonError(404, "File not found.");
+    return jsonError(404, "not_found", "File not found.");
   }
 
   return new Response(new Uint8Array(data), {
