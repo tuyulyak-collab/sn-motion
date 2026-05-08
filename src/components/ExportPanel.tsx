@@ -39,7 +39,7 @@ type Status =
       fps: number;
       durationInFrames: number;
     }
-  | { state: "failed"; error: string };
+  | { state: "failed"; error: string; code?: string };
 
 type RenderEvent =
   | { type: "progress"; progress: number; stage?: "preparing" | "rendering" }
@@ -52,7 +52,32 @@ type RenderEvent =
       fps: number;
       durationInFrames: number;
     }
-  | { type: "error"; error: string };
+  | { type: "error"; error: string; code?: string };
+
+// Friendly copy mapped from the stable error codes the render API emits
+// (see src/app/api/render/route.ts → RenderErrorCode). The raw `error`
+// string is intentionally NOT shown to the user — it can include stack
+// traces or filesystem paths.
+const FRIENDLY_ERROR_BY_CODE: Record<string, string> = {
+  invalid_props:
+    "Those export settings aren’t supported. Please pick an allowed motion type, aspect ratio, resolution, frame rate, and duration, then try again.",
+  bundle_failed:
+    "We couldn’t prepare the Remotion composition for export. Please try again — if it keeps failing, restart the server.",
+  composition_missing:
+    "The dynamic-motion-preview composition wasn’t found. Please refresh the page and try the export again.",
+  render_failed:
+    "Rendering the MP4 didn’t finish. Any partial file was cleaned up. Please try again.",
+  write_failed:
+    "We couldn’t write the MP4 to disk. Make sure public/renders/ is writable, then try again.",
+};
+
+const FRIENDLY_FALLBACK =
+  "Something went wrong while exporting. Please try again — if it keeps failing, take a look at the server logs.";
+
+const friendlyExportError = (code: string | undefined): string => {
+  if (code && FRIENDLY_ERROR_BY_CODE[code]) return FRIENDLY_ERROR_BY_CODE[code];
+  return FRIENDLY_FALLBACK;
+};
 
 const SAFETY_HELPER_COPY =
   "Please review stock-safety warnings before submitting to microstock platforms.";
@@ -110,7 +135,16 @@ export const ExportPanel: React.FC<Props> = ({ settings }) => {
     return computeStockSafetyStatus(scan, checklist);
   }, [settings]);
 
+  const heavySettings = useMemo(
+    () => describeHeavyExport(dynamicProps),
+    [dynamicProps],
+  );
+
   const abortRef = useRef<AbortController | null>(null);
+  // Synchronous in-flight guard so a fast double-click (or any second call
+  // that lands before the React state update flushes) cannot start a second
+  // /api/render request.
+  const inFlightRef = useRef(false);
 
   useEffect(() => {
     return () => {
@@ -119,6 +153,8 @@ export const ExportPanel: React.FC<Props> = ({ settings }) => {
   }, []);
 
   const startExport = async () => {
+    if (inFlightRef.current) return;
+    inFlightRef.current = true;
     const fname = generateExportFilename(settings.motionType);
     setFilename(fname);
     setStatus({ state: "preparing" });
@@ -136,12 +172,22 @@ export const ExportPanel: React.FC<Props> = ({ settings }) => {
 
       if (!res.ok) {
         const err = await safeJson(res);
-        throw new Error(err?.error ?? `Render failed (${res.status})`);
+        setStatus({
+          state: "failed",
+          code: err?.code,
+          error: err?.error ?? `Render failed (${res.status})`,
+        });
+        return;
       }
 
       const reader = res.body?.getReader();
       if (!reader) {
-        throw new Error("No response body from render API.");
+        setStatus({
+          state: "failed",
+          code: "render_failed",
+          error: "No response body from render API.",
+        });
+        return;
       }
       const decoder = new TextDecoder();
       let buffer = "";
@@ -176,6 +222,7 @@ export const ExportPanel: React.FC<Props> = ({ settings }) => {
       setStatus({ state: "failed", error: message });
     } finally {
       abortRef.current = null;
+      inFlightRef.current = false;
     }
   };
 
@@ -221,6 +268,15 @@ export const ExportPanel: React.FC<Props> = ({ settings }) => {
           value={RISK_LEVEL_LABEL[safetyStatus.status]}
         />
       </div>
+
+      {heavySettings.isHeavy && (
+        <p
+          className="text-[11px] text-mute"
+          data-testid="export-heavier-note"
+        >
+          Heavier exports may take longer—you picked {heavySettings.reasons}.
+        </p>
+      )}
 
       <div
         className="rounded-2xl border border-white/70 bg-white/60 px-4 py-3"
@@ -269,10 +325,16 @@ export const ExportPanel: React.FC<Props> = ({ settings }) => {
             border: "1px solid rgba(246,167,193,0.55)",
           }}
           data-testid="export-error"
+          data-error-code={status.code ?? "unknown"}
           role="alert"
         >
           <div className="font-semibold mb-1">Export failed</div>
-          <div className="text-[12px] leading-snug">{status.error}</div>
+          <div
+            className="text-[12px] leading-snug"
+            data-testid="export-error-message"
+          >
+            {friendlyExportError(status.code)}
+          </div>
         </div>
       )}
 
@@ -288,8 +350,14 @@ export const ExportPanel: React.FC<Props> = ({ settings }) => {
         >
           <div className="font-semibold mb-1">Export complete</div>
           <div className="text-[12px] leading-snug">
-            Saved as <span className="font-mono">{status.filename}</span> ·{" "}
-            {status.width} × {status.height} · {status.fps} fps ·{" "}
+            Saved as{" "}
+            <span
+              className="font-mono"
+              data-testid="export-success-filename"
+            >
+              {status.filename}
+            </span>{" "}
+            · {status.width} × {status.height} · {status.fps} fps ·{" "}
             {Math.round(status.durationInFrames / status.fps)}s
           </div>
         </div>
@@ -305,9 +373,10 @@ export const ExportPanel: React.FC<Props> = ({ settings }) => {
           onClick={startExport}
           className="sn-button-primary"
           disabled={isExporting}
+          aria-busy={isExporting}
           data-testid="export-button"
         >
-          {isExporting ? "Rendering…" : "Export MP4"}
+          {primaryButtonLabel(status, isExporting)}
         </button>
         {status.state === "completed" && (
           <a
@@ -322,6 +391,48 @@ export const ExportPanel: React.FC<Props> = ({ settings }) => {
       </div>
     </section>
   );
+};
+
+const primaryButtonLabel = (status: Status, isExporting: boolean): string => {
+  if (isExporting) return "Rendering video…";
+  if (status.state === "failed") return "Retry";
+  if (status.state === "completed") return "Render again";
+  return "Export MP4";
+};
+
+// We surface a short "heavier exports may take longer" hint for any of:
+// - 1080p (4K is currently disabled in the UI)
+// - durations >= 15s (the longer two of the four duration choices)
+// - frame rates above 24 fps (60 fps is disabled but we still gate on it)
+type HeavyExportInfo = { isHeavy: boolean; reasons: string };
+
+const describeHeavyExport = (props: {
+  resolution: string;
+  durationSeconds: number;
+  frameRate: number;
+}): HeavyExportInfo => {
+  const reasons: string[] = [];
+  if (props.resolution === "1080p" || props.resolution === "4k") {
+    reasons.push(props.resolution === "4k" ? "4K" : "1080p");
+  }
+  if (props.durationSeconds >= 15) {
+    reasons.push(`${props.durationSeconds}s duration`);
+  }
+  if (props.frameRate > 24) {
+    reasons.push(`${props.frameRate} fps`);
+  }
+  if (reasons.length === 0) return { isHeavy: false, reasons: "" };
+  return {
+    isHeavy: true,
+    reasons: humanJoin(reasons),
+  };
+};
+
+const humanJoin = (items: string[]): string => {
+  if (items.length === 0) return "";
+  if (items.length === 1) return items[0];
+  if (items.length === 2) return `${items[0]} and ${items[1]}`;
+  return `${items.slice(0, -1).join(", ")}, and ${items[items.length - 1]}`;
 };
 
 const Stat: React.FC<{ label: string; value: string }> = ({ label, value }) => (
@@ -434,13 +545,15 @@ const handleEvent = (
       durationInFrames: evt.durationInFrames,
     });
   } else if (evt.type === "error") {
-    setStatus({ state: "failed", error: evt.error });
+    setStatus({ state: "failed", error: evt.error, code: evt.code });
   }
 };
 
-const safeJson = async (res: Response): Promise<{ error?: string } | null> => {
+const safeJson = async (
+  res: Response,
+): Promise<{ error?: string; code?: string } | null> => {
   try {
-    return (await res.json()) as { error?: string };
+    return (await res.json()) as { error?: string; code?: string };
   } catch {
     return null;
   }
