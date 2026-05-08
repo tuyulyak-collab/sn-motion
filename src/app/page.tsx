@@ -15,6 +15,10 @@ import {
   countdownIntroDefaults,
   CountdownIntroProps,
 } from "@/remotion/schemas/countdownSchema";
+import {
+  MotionSettings,
+  motionSettingsDefaults,
+} from "@/lib/motionSettings";
 import { parseSettingsJson } from "@/lib/settingsStorage";
 
 const STORAGE_KEY = "sn-motion:settings:v1";
@@ -22,6 +26,9 @@ const SECTION_KEY = "sn-motion:section:v1";
 
 export default function HomePage() {
   const [props, setProps] = useState<CountdownIntroProps>(countdownIntroDefaults);
+  const [motionSettings, setMotionSettings] = useState<MotionSettings>(
+    motionSettingsDefaults,
+  );
   const [active, setActive] = useState<SectionId>(DEFAULT_SECTION);
   const [hydrated, setHydrated] = useState(false);
   const loadRef = useRef<HTMLInputElement>(null);
@@ -96,7 +103,11 @@ export default function HomePage() {
         <DashboardSection props={props} onNavigate={setActive} />
       )}
       {active === "single-motion" && (
-        <SingleMotionSection props={props} onChange={setProps} />
+        <SingleMotionSection
+          settings={motionSettings}
+          onSettingsChange={setMotionSettings}
+          onSelect={setActive}
+        />
       )}
       {active === "batch-motion" && <BatchSection />}
       {active === "preview" && <PreviewSection props={props} />}
