@@ -6,6 +6,7 @@ import { MotionBriefStep } from "@/components/single-motion/MotionBriefStep";
 import { RemotionPlayerPreview } from "@/components/single-motion/RemotionPlayerPreview";
 import { SceneStyleStep } from "@/components/single-motion/SceneStyleStep";
 import { StepCard } from "@/components/single-motion/StepCard";
+import { StockSafetyPanel } from "@/components/single-motion/StockSafetyPanel";
 import { VideoSettingsStep } from "@/components/single-motion/VideoSettingsStep";
 import {
   MotionSettings,
@@ -96,6 +97,8 @@ export const SingleMotionSection: React.FC<Props> = ({
 
   return (
     <SectionShell sectionId="single-motion">
+      <StockSafetyPanel settings={settings} onChange={setField} />
+
       <StepCard
         ref={step1Ref}
         number={1}

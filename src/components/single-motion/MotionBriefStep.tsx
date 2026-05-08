@@ -6,6 +6,7 @@ import {
   MotionSettings,
   MotionType,
 } from "@/lib/motionSettings";
+import { SafetyHint } from "./SafetyHint";
 
 type Props = {
   value: MotionSettings;
@@ -34,6 +35,13 @@ export const MotionBriefStep: React.FC<Props> = ({ value, onChange }) => {
           your description is saved with the motion and will guide future
           assistive features.
         </p>
+        <SafetyHint
+          fieldLabel="Motion concept"
+          text={value.motionConcept}
+          reminder={
+            "Stock-safe tip: describe the idea generically — avoid brand names, real people, copyrighted titles, and \u201Cofficial / certified / guaranteed\u201D claims."
+          }
+        />
       </div>
 
       <div>

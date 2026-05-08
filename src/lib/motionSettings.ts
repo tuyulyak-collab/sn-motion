@@ -66,6 +66,16 @@ export type MotionSettings = {
   backgroundBlur: BackgroundBlur;
   glowIntensity: GlowIntensity;
   overlayOpacity: OverlayOpacity;
+  // Global microstock safety checklist (PR #10). These are user
+  // acknowledgements and intentionally default to `false` so a fresh project
+  // surfaces in the "Needs review" state until the human submitter confirms
+  // they've handled licensing + AI disclosure. Stock safety is global to SN
+  // Motion and is NOT a preset / template / mode.
+  fontLicenseConfirmed: boolean;
+  iconLicenseConfirmed: boolean;
+  audioLicenseConfirmed: boolean;
+  assetLicenseConfirmed: boolean;
+  aiDisclosureAcknowledged: boolean;
 };
 
 export const ADVANCED_COLOR_KEYS = [
@@ -112,6 +122,11 @@ export const motionSettingsDefaults: MotionSettings = {
   backgroundBlur: "medium",
   glowIntensity: "soft",
   overlayOpacity: 50,
+  fontLicenseConfirmed: false,
+  iconLicenseConfirmed: false,
+  audioLicenseConfirmed: false,
+  assetLicenseConfirmed: false,
+  aiDisclosureAcknowledged: false,
 };
 
 export type MotionTypeOption = {

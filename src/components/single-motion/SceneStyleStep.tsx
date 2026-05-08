@@ -9,6 +9,7 @@ import {
 } from "@/lib/motionSettings";
 import { AdvancedColors } from "./AdvancedColors";
 import { ColorField } from "./ColorField";
+import { SafetyHint } from "./SafetyHint";
 import { SegmentedField } from "./SegmentedField";
 
 type Props = {
@@ -39,6 +40,11 @@ export const SceneStyleStep: React.FC<Props> = ({
             onChange={(e) => onChange("channelName", e.target.value)}
             placeholder="Your channel"
           />
+          <SafetyHint
+            fieldLabel="Channel name"
+            text={value.channelName}
+            reminder="Stock-safe tip: use a generic creator name. Avoid real channel names you do not own and any brand or trademark."
+          />
         </div>
         <div>
           <label className="sn-label" htmlFor="title-text">
@@ -50,6 +56,11 @@ export const SceneStyleStep: React.FC<Props> = ({
             value={value.titleText}
             onChange={(e) => onChange("titleText", e.target.value)}
             placeholder="Main title"
+          />
+          <SafetyHint
+            fieldLabel="Title"
+            text={value.titleText}
+            reminder="Stock-safe tip: keep the title generic. Avoid brand names, real people, fictional characters, and copyrighted titles."
           />
         </div>
         <div>
@@ -63,6 +74,13 @@ export const SceneStyleStep: React.FC<Props> = ({
             onChange={(e) => onChange("subtitleText", e.target.value)}
             placeholder="Short helper line"
           />
+          <SafetyHint
+            fieldLabel="Subtitle"
+            text={value.subtitleText}
+            reminder={
+              "Stock-safe tip: avoid \u201Cofficial / certified / guaranteed\u201D wording — soften unverifiable claims."
+            }
+          />
         </div>
         <div>
           <label className="sn-label" htmlFor="final-text">
@@ -74,6 +92,11 @@ export const SceneStyleStep: React.FC<Props> = ({
             value={value.finalText}
             onChange={(e) => onChange("finalText", e.target.value)}
             placeholder="Closing call to action"
+          />
+          <SafetyHint
+            fieldLabel="Final text"
+            text={value.finalText}
+            reminder="Stock-safe tip: a call-to-action that does not reference a specific platform or brand travels better across stock sites."
           />
         </div>
       </div>
