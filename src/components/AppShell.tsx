@@ -13,8 +13,6 @@ import {
 type Props = {
   active: SectionId;
   onSelect: (id: SectionId) => void;
-  onSave: () => void;
-  onExport: () => void;
   children: React.ReactNode;
 };
 
@@ -24,8 +22,6 @@ const isSectionId = (value: string | null): value is SectionId =>
 export const AppShell: React.FC<Props> = ({
   active,
   onSelect,
-  onSave,
-  onExport,
   children,
 }) => {
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -52,8 +48,6 @@ export const AppShell: React.FC<Props> = ({
             <TopBar
               sectionLabel={section.label}
               onOpenMenu={() => setDrawerOpen(true)}
-              onSave={onSave}
-              onExport={onExport}
             />
             <main className="min-w-0">{children}</main>
             <footer className="mt-6 text-center text-xs text-mute">
@@ -98,24 +92,22 @@ export { isSectionId, DEFAULT_SECTION };
 const TopBar: React.FC<{
   sectionLabel: string;
   onOpenMenu: () => void;
-  onSave: () => void;
-  onExport: () => void;
-}> = ({ sectionLabel, onOpenMenu, onSave, onExport }) => {
+}> = ({ sectionLabel, onOpenMenu }) => {
   return (
     <div className="glass-card px-4 sm:px-5 py-3 flex items-center gap-3">
       <button
         type="button"
         aria-label="Open menu"
         onClick={onOpenMenu}
-        className="lg:hidden rounded-2xl p-2 text-mute hover:text-ink hover:bg-white/70 transition"
+        className="lg:hidden rounded-2xl p-2 text-soft hover:text-ink hover:bg-white/70 transition"
       >
         <SectionIcon name="menu" className="w-5 h-5" />
       </button>
       <div className="flex items-center gap-2 min-w-0 flex-1">
-        <span className="text-xs text-mute uppercase tracking-wider hidden sm:inline">
+        <span className="text-xs text-soft uppercase tracking-wider hidden sm:inline">
           SN Motion
         </span>
-        <span className="text-mute hidden sm:inline" aria-hidden>
+        <span className="text-soft hidden sm:inline" aria-hidden>
           /
         </span>
         <span className="font-semibold text-ink truncate">{sectionLabel}</span>
@@ -123,17 +115,31 @@ const TopBar: React.FC<{
       <div className="flex items-center gap-2 sm:gap-3">
         <button
           type="button"
-          onClick={onSave}
-          className="sn-button-secondary"
+          disabled
+          aria-disabled="true"
+          title="Save settings is coming soon"
+          className="sn-button-secondary inline-flex items-center gap-2 opacity-60 cursor-not-allowed"
         >
-          Save settings
+          <span>Save settings</span>
+          <span className="sn-pill sn-pill-soon" aria-hidden>
+            Soon
+          </span>
         </button>
         <button
           type="button"
-          onClick={onExport}
-          className="sn-button-primary"
+          disabled
+          aria-disabled="true"
+          title="Export video is coming soon"
+          className="sn-button-primary inline-flex items-center gap-2 opacity-60 cursor-not-allowed"
         >
-          Export video
+          <span>Export video</span>
+          <span
+            className="sn-pill sn-pill-soon"
+            aria-hidden
+            style={{ background: "rgba(255,255,255,0.85)", color: "#8a4a2a" }}
+          >
+            Soon
+          </span>
         </button>
       </div>
     </div>

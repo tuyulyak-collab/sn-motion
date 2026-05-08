@@ -43,7 +43,7 @@ export const DashboardSection: React.FC<Props> = ({ props, onNavigate }) => {
       <section className="glass-card p-6 md:p-8">
         <div className="flex flex-col gap-1 mb-4">
           <h2 className="text-lg font-bold text-ink">Quick start</h2>
-          <p className="text-sm text-mute">
+          <p className="text-sm text-soft">
             Pick where you want to go next. Everything stays inside one app —
             no timelines, no code editor.
           </p>
@@ -76,7 +76,7 @@ export const DashboardSection: React.FC<Props> = ({ props, onNavigate }) => {
       <section className="glass-card p-6 md:p-8">
         <div className="flex flex-col gap-1 mb-4">
           <h2 className="text-lg font-bold text-ink">What&apos;s next</h2>
-          <p className="text-sm text-mute">
+          <p className="text-sm text-soft">
             SN Motion is in early access. Batch generation is on the way.
           </p>
         </div>
@@ -142,7 +142,7 @@ const ActionCard: React.FC<{
       style={{ background: accent }}
     >
       <div className="font-bold text-ink mb-1">{title}</div>
-      <p className="text-sm text-mute mb-3">{description}</p>
+      <p className="text-sm text-soft mb-3">{description}</p>
       <span className="text-sm font-semibold text-[#6e57d6]">{cta} →</span>
     </button>
   );
@@ -164,6 +164,6 @@ const Highlight: React.FC<{
       <div className="font-bold text-ink">{title}</div>
       <span className={`sn-pill ${badgeClass}`}>{badge}</span>
     </div>
-    <p className="text-sm text-mute">{description}</p>
+    <p className="text-sm text-soft">{description}</p>
   </button>
 );

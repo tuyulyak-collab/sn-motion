@@ -16,7 +16,8 @@
   --sn-teal: #a8e6e2;
 
   --sn-text-main: #2f2b3a;
-  --sn-text-muted: #8a8396;
+  --sn-text-muted: #635a73;
+  --sn-text-soft: #4d4660;
 
   --sn-border-soft: rgba(255, 255, 255, 0.75);
   --sn-shadow-soft: 0 24px 70px rgba(142, 113, 161, 0.18);
@@ -174,6 +175,9 @@ body {
   }
   .text-mute {
     color: var(--sn-text-muted);
+  }
+  .text-soft {
+    color: var(--sn-text-soft);
   }
   .bg-cream {
     background: var(--sn-bg-main);
