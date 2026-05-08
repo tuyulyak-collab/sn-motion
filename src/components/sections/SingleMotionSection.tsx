@@ -9,6 +9,7 @@ import { VideoSettingsStep } from "@/components/single-motion/VideoSettingsStep"
 import {
   MotionSettings,
   motionSettingsDefaults,
+  resetAdvancedColors,
   sanitizeMotionSettings,
 } from "@/lib/motionSettings";
 import { SectionShell } from "./SectionShell";
@@ -83,6 +84,11 @@ export const SingleMotionSection: React.FC<Props> = ({
     setPreviewVersion((v) => v + 1);
   }, [onSettingsChange]);
 
+  const handleResetColors = useCallback(() => {
+    onSettingsChange(resetAdvancedColors(settings));
+    setPreviewVersion((v) => v + 1);
+  }, [onSettingsChange, settings]);
+
   const handleGoToPreview = useCallback(() => {
     onSelect("preview");
   }, [onSelect]);
@@ -133,7 +139,11 @@ export const SingleMotionSection: React.FC<Props> = ({
           </>
         }
       >
-        <SceneStyleStep value={settings} onChange={setField} />
+        <SceneStyleStep
+          value={settings}
+          onChange={setField}
+          onResetColors={handleResetColors}
+        />
       </StepCard>
 
       <StepCard

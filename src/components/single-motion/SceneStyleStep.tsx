@@ -7,6 +7,8 @@ import {
   MotionSettings,
   STYLE_DIRECTION_OPTIONS,
 } from "@/lib/motionSettings";
+import { AdvancedColors } from "./AdvancedColors";
+import { ColorField } from "./ColorField";
 import { SegmentedField } from "./SegmentedField";
 
 type Props = {
@@ -15,9 +17,14 @@ type Props = {
     key: K,
     next: MotionSettings[K],
   ) => void;
+  onResetColors: () => void;
 };
 
-export const SceneStyleStep: React.FC<Props> = ({ value, onChange }) => {
+export const SceneStyleStep: React.FC<Props> = ({
+  value,
+  onChange,
+  onResetColors,
+}) => {
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -89,16 +96,22 @@ export const SceneStyleStep: React.FC<Props> = ({ value, onChange }) => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="sn-label">Primary color</label>
+          <label className="sn-label" htmlFor="primary-color">
+            Primary color
+          </label>
           <ColorField
+            inputId="primary-color"
             value={value.primaryColor}
             onChange={(v) => onChange("primaryColor", v)}
             ariaLabel="Pick primary color"
           />
         </div>
         <div>
-          <label className="sn-label">Secondary color</label>
+          <label className="sn-label" htmlFor="secondary-color">
+            Secondary color
+          </label>
           <ColorField
+            inputId="secondary-color"
             value={value.secondaryColor}
             onChange={(v) => onChange("secondaryColor", v)}
             ariaLabel="Pick secondary color"
@@ -113,49 +126,12 @@ export const SceneStyleStep: React.FC<Props> = ({ value, onChange }) => {
         onChange={(next) => onChange("motionIntensity", next)}
         columns={3}
       />
+
+      <AdvancedColors
+        value={value}
+        onChange={onChange}
+        onResetColors={onResetColors}
+      />
     </>
   );
-};
-
-const ColorField: React.FC<{
-  value: string;
-  onChange: (v: string) => void;
-  ariaLabel: string;
-}> = ({ value, onChange, ariaLabel }) => {
-  return (
-    <div
-      className="flex items-center gap-3 rounded-2xl border px-3 py-2"
-      style={{
-        background: "rgba(255,255,255,0.78)",
-        borderColor: "rgba(185,167,255,0.28)",
-      }}
-    >
-      <input
-        type="color"
-        value={normalizeHex(value)}
-        onChange={(e) => onChange(e.target.value.toUpperCase())}
-        className="w-9 h-9 rounded-full border-0 bg-transparent cursor-pointer"
-        aria-label={ariaLabel}
-      />
-      <input
-        type="text"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="flex-1 bg-transparent outline-none text-sm font-mono text-ink"
-        spellCheck={false}
-      />
-    </div>
-  );
-};
-
-const normalizeHex = (raw: string): string => {
-  const trimmed = (raw ?? "").trim();
-  if (/^#[0-9a-fA-F]{6}$/.test(trimmed)) return trimmed;
-  if (/^#[0-9a-fA-F]{3}$/.test(trimmed)) {
-    const r = trimmed.charAt(1);
-    const g = trimmed.charAt(2);
-    const b = trimmed.charAt(3);
-    return `#${r}${r}${g}${g}${b}${b}`;
-  }
-  return "#000000";
 };
