@@ -16,6 +16,10 @@ SN Motion is **motion-first**, not template-first. The user always controls the 
   - Theme (Soft Pastel Glass, Modern Gradient, Neon Dark, Clean Minimal, Bold Creator)
   - Primary & secondary colors
   - Background type, countdown style, music, tick sound
+- Fine-tune the look with **advanced visual color controls** (collapsed by default inside Scene & style):
+  - Text color, background start, background end, accent color, number color, overlay color, glow color
+  - Background blur (Low / Medium / High), glow strength (Off / Soft / Medium / Strong), overlay opacity (0% / 25% / 50% / 75%)
+  - **Reset colors only** restores just the advanced color block without touching the rest of the settings.
 - See a live preview that updates while you type.
 - Export an MP4 with a deterministic, frame-based animation.
 - Save and load settings as a small JSON file.

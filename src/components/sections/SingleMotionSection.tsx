@@ -1,172 +1,199 @@
 "use client";
 
-import React from "react";
-import { CustomizePanel } from "@/components/CustomizePanel";
-import { PromptBox } from "@/components/PromptBox";
+import React, { useCallback, useRef, useState } from "react";
+import { MockPreview } from "@/components/single-motion/MockPreview";
+import { MotionBriefStep } from "@/components/single-motion/MotionBriefStep";
+import { SceneStyleStep } from "@/components/single-motion/SceneStyleStep";
+import { StepCard } from "@/components/single-motion/StepCard";
+import { VideoSettingsStep } from "@/components/single-motion/VideoSettingsStep";
 import {
-  CountdownIntroProps,
-  countdownIntroDefaults,
-} from "@/remotion/schemas/countdownSchema";
+  MotionSettings,
+  motionSettingsDefaults,
+  resetAdvancedColors,
+  sanitizeMotionSettings,
+} from "@/lib/motionSettings";
 import { SectionShell } from "./SectionShell";
+import { SectionId } from "./sectionDefs";
 
 type Props = {
-  props: CountdownIntroProps;
-  onChange: (next: CountdownIntroProps) => void;
+  settings: MotionSettings;
+  onSettingsChange: (next: MotionSettings) => void;
+  onSelect: (id: SectionId) => void;
 };
 
-type QuickStart = {
-  id: string;
-  name: string;
-  blurb: string;
-  status: "available" | "soon";
-  gradient: string;
-  emoji: string;
-};
+const STEP_TITLES = [
+  {
+    title: "Motion brief",
+    helper: "Describe the motion idea and pick its animation backbone.",
+  },
+  {
+    title: "Scene & style",
+    helper: "Set the words, mood, and palette for the motion.",
+  },
+  {
+    title: "Video settings",
+    helper:
+      "Choose the technical output — duration, aspect ratio, resolution, and stage timing.",
+  },
+] as const;
 
-const QUICK_STARTS: QuickStart[] = [
-  {
-    id: "youtube-countdown-intro",
-    name: "YouTube Countdown Intro",
-    blurb: "Pastel countdown intro for any video — Shorts, Reels or YouTube.",
-    status: "available",
-    gradient: "linear-gradient(135deg, #F6A7C1, #B9A7FF)",
-    emoji: "⏱",
-  },
-  {
-    id: "starting-soon",
-    name: "Starting Soon Screen",
-    blurb: "Soft animated starting soon screen for live streams.",
-    status: "soon",
-    gradient: "linear-gradient(135deg, #BFEAD8, #A8E6E2)",
-    emoji: "🎬",
-  },
-  {
-    id: "subscribe-anim",
-    name: "Subscribe Animation",
-    blurb: "Eye-catching subscribe button reveal with confetti accents.",
-    status: "soon",
-    gradient: "linear-gradient(135deg, #F7E68C, #F7C8A6)",
-    emoji: "🔔",
-  },
-];
+export const SingleMotionSection: React.FC<Props> = ({
+  settings,
+  onSettingsChange,
+  onSelect,
+}) => {
+  const step1Ref = useRef<HTMLElement>(null);
+  const step2Ref = useRef<HTMLElement>(null);
+  const step3Ref = useRef<HTMLElement>(null);
+  const previewRef = useRef<HTMLDivElement>(null);
+  const [previewVersion, setPreviewVersion] = useState(0);
 
-export const SingleMotionSection: React.FC<Props> = ({ props, onChange }) => {
-  const handleQuickStart = (id: string) => {
-    if (id === "youtube-countdown-intro") {
-      onChange(countdownIntroDefaults);
+  const setField = useCallback(
+    <K extends keyof MotionSettings>(key: K, next: MotionSettings[K]) => {
+      onSettingsChange({ ...settings, [key]: next });
+    },
+    [onSettingsChange, settings],
+  );
+
+  const scrollToRef = useCallback((ref: React.RefObject<HTMLElement>) => {
+    if (ref.current) {
+      ref.current.scrollIntoView({ behavior: "smooth", block: "start" });
     }
-  };
+  }, []);
+
+  const handleGeneratePreview = useCallback(() => {
+    const cleaned = sanitizeMotionSettings(settings);
+    if (
+      cleaned.introLength !== settings.introLength ||
+      cleaned.holdLength !== settings.holdLength ||
+      cleaned.outroLength !== settings.outroLength
+    ) {
+      onSettingsChange(cleaned);
+    }
+    setPreviewVersion((v) => v + 1);
+    requestAnimationFrame(() => {
+      previewRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    });
+  }, [settings, onSettingsChange]);
+
+  const handleReset = useCallback(() => {
+    onSettingsChange(motionSettingsDefaults);
+    setPreviewVersion((v) => v + 1);
+  }, [onSettingsChange]);
+
+  const handleResetColors = useCallback(() => {
+    onSettingsChange(resetAdvancedColors(settings));
+    setPreviewVersion((v) => v + 1);
+  }, [onSettingsChange, settings]);
+
+  const handleGoToPreview = useCallback(() => {
+    onSelect("preview");
+  }, [onSelect]);
 
   return (
     <SectionShell sectionId="single-motion">
-      <Step number={1} title="Describe your motion idea (optional)">
-        <PromptBox current={props} onApply={onChange} />
-      </Step>
-
-      <Step
-        number={2}
-        title="Quick start motion type (optional)"
-        helper="Skip this if you already described the motion you want above."
-      >
-        <div className="glass-card p-5 md:p-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {QUICK_STARTS.map((q) => (
-              <QuickStartCard
-                key={q.id}
-                quick={q}
-                onSelect={() => handleQuickStart(q.id)}
-              />
-            ))}
+      <StepCard
+        ref={step1Ref}
+        number={1}
+        title={STEP_TITLES[0].title}
+        helper={STEP_TITLES[0].helper}
+        footer={
+          <div className="ml-auto">
+            <button
+              type="button"
+              className="sn-button-primary"
+              onClick={() => scrollToRef(step2Ref)}
+            >
+              Next: Scene &amp; style →
+            </button>
           </div>
-        </div>
-      </Step>
+        }
+      >
+        <MotionBriefStep value={settings} onChange={setField} />
+      </StepCard>
 
-      <Step
+      <StepCard
+        ref={step2Ref}
+        number={2}
+        title={STEP_TITLES[1].title}
+        helper={STEP_TITLES[1].helper}
+        footer={
+          <>
+            <button
+              type="button"
+              className="sn-button-secondary"
+              onClick={() => scrollToRef(step1Ref)}
+            >
+              ← Back
+            </button>
+            <button
+              type="button"
+              className="sn-button-primary ml-auto"
+              onClick={() => scrollToRef(step3Ref)}
+            >
+              Next: Video settings →
+            </button>
+          </>
+        }
+      >
+        <SceneStyleStep
+          value={settings}
+          onChange={setField}
+          onResetColors={handleResetColors}
+        />
+      </StepCard>
+
+      <StepCard
+        ref={step3Ref}
         number={3}
-        title="Adjust video settings"
-        helper="Channel name, length, video size, theme, colors and final text."
+        title={STEP_TITLES[2].title}
+        helper={STEP_TITLES[2].helper}
+        footer={
+          <>
+            <button
+              type="button"
+              className="sn-button-secondary"
+              onClick={() => scrollToRef(step2Ref)}
+            >
+              ← Back
+            </button>
+            <div className="ml-auto flex flex-wrap gap-2">
+              <button
+                type="button"
+                className="sn-button-secondary"
+                onClick={handleReset}
+              >
+                Reset settings
+              </button>
+              <button
+                type="button"
+                className="sn-button-primary"
+                onClick={handleGeneratePreview}
+              >
+                Generate preview
+              </button>
+              <button
+                type="button"
+                className="sn-button-secondary"
+                onClick={handleGoToPreview}
+              >
+                Go to Preview →
+              </button>
+            </div>
+          </>
+        }
       >
-        <CustomizePanel value={props} onChange={onChange} />
-      </Step>
+        <VideoSettingsStep value={settings} onChange={setField} />
+      </StepCard>
 
-      <p className="text-sm text-mute">
-        Next: open <span className="font-semibold text-ink">Preview</span> to
-        watch your motion play, then{" "}
-        <span className="font-semibold text-ink">Export</span> to render the
-        MP4.
-      </p>
+      <MockPreview
+        ref={previewRef}
+        settings={settings}
+        version={previewVersion}
+      />
     </SectionShell>
-  );
-};
-
-const Step: React.FC<{
-  number: number;
-  title: string;
-  helper?: string;
-  children: React.ReactNode;
-}> = ({ number, title, helper, children }) => (
-  <section className="flex flex-col gap-3">
-    <div className="flex items-center gap-3">
-      <span
-        className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm shadow-glass"
-        style={{
-          background: "linear-gradient(135deg, #F6A7C1, #B9A7FF)",
-          color: "white",
-        }}
-        aria-hidden
-      >
-        {number}
-      </span>
-      <div>
-        <div className="font-bold text-ink">{title}</div>
-        {helper ? (
-          <div className="text-xs text-mute">{helper}</div>
-        ) : null}
-      </div>
-    </div>
-    {children}
-  </section>
-);
-
-const QuickStartCard: React.FC<{
-  quick: QuickStart;
-  onSelect: () => void;
-}> = ({ quick, onSelect }) => {
-  const isAvailable = quick.status === "available";
-  return (
-    <button
-      type="button"
-      disabled={!isAvailable}
-      onClick={onSelect}
-      className={`text-left rounded-3xl p-4 transition-all border ${
-        isAvailable
-          ? "hover:-translate-y-[2px] hover:shadow-glass cursor-pointer"
-          : "cursor-not-allowed opacity-70"
-      }`}
-      style={{
-        background: "rgba(255,255,255,0.78)",
-        borderColor: "rgba(255,255,255,0.85)",
-      }}
-    >
-      <div
-        className="w-full h-20 rounded-2xl mb-3 flex items-center justify-center text-2xl"
-        style={{ background: quick.gradient, color: "white" }}
-      >
-        <span aria-hidden>{quick.emoji}</span>
-      </div>
-      <div className="flex items-start justify-between gap-2 mb-1">
-        <div className="font-semibold text-ink text-sm leading-tight">
-          {quick.name}
-        </div>
-        <span
-          className={`sn-pill shrink-0 ${
-            isAvailable ? "sn-pill-active" : "sn-pill-soon"
-          }`}
-        >
-          {isAvailable ? "Use" : "Coming soon"}
-        </span>
-      </div>
-      <p className="text-xs text-mute leading-snug">{quick.blurb}</p>
-    </button>
   );
 };
